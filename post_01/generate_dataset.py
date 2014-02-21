@@ -14,6 +14,7 @@ nb_files = len(paths)
 Fs = 16000.0
 winLength = 241
 extr_data_all = np.zeros((0, winLength))
+norm_factor = 560
 
 
 def featExtract(data, winLength):
@@ -35,9 +36,9 @@ for files in paths:
     i += 1
     extr_data = featExtract(data, winLength)
     if files == paths[-1]:
-        sentence = extr_data/560
+        sentence = extr_data/norm_factor
     else:
-        extr_data_all = np.vstack((extr_data_all, extr_data/560))
+        extr_data_all = np.vstack((extr_data_all, extr_data/norm_factor))
     del extr_data
 
 np.random.seed(1234)
@@ -55,7 +56,7 @@ valid = (data[0][int(n/4*2):int(n/4*3)], data[1][int(n/4*2):int(n/4*3)].reshape(
 test = (data[0][int(n/4*3):], data[1][int(n/4*3):].reshape(int(n-int(n/4*3))))
 del data
 
-# Save the extracted features in a .npy file
+# Save the extracted features in a .pkl file
 f = file(outputpath+'timit_train.pkl', 'wb')
 cPickle.dump((train, valid, test, sentence), f, protocol=cPickle.HIGHEST_PROTOCOL)
 f.close()
