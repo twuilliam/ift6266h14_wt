@@ -170,6 +170,32 @@ class MLP(object):
         # made out of
         self.params = self.hiddenLayer.params + self.outputLayer.params
 
+    def save_model(self, filename='params.pkl',
+                   save_dir='output_folder'):
+        """ Save the parameters of the model """
+
+        print '... saving model'
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+
+        save_file = open(os.path.join(save_dir, filename), 'wb')
+        cPickle.dump(self.params, save_file, protocol=cPickle.HIGHEST_PROTOCOL)
+        save_file.close()
+
+    def load_model(self, filename='params.pkl',
+                   load_dir='output_folder'):
+        """ Load the parameters """
+        print '... loading model'
+
+        save_file = open(os.path.join(load_dir, filename), 'r')
+        params = cPickle.load(save_file)
+        save_file.close()
+
+        self.hiddenLayer.W.set_value(params[0].get_value(), borrow=True)
+        self.hiddenLayer.b.set_value(params[1].get_value(), borrow=True)
+        self.outputLayer.W.set_value(params[2].get_value(), borrow=True)
+        self.outputLayer.b.set_value(params[3].get_value(), borrow=True)
+
 
 def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
              dataset='mnist.pkl.gz', batch_size=20, n_hidden=500):
@@ -291,7 +317,6 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     ###############
     print '... training'
 
-    best_params = None
     best_validation_loss = numpy.inf
     best_epoch = 0
     test_score = 0.
@@ -327,36 +352,38 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
             best_validation_loss = this_validation_loss
             best_epoch = epoch
 
-            # testing set
-            test_losses = [test_model(i) for i in xrange(n_test_batches)]
-            test_score = numpy.mean(test_losses)
+            # Saving the model set
+            regression.save_model()
 
-            print(('     epoch %i, test error of best model %f') %
-                  (epoch, test_score))
+    # Load the best model
+    regression.load_model()
+    test_losses = [test_model(i) for i in xrange(n_test_batches)]
+    test_score = numpy.mean(test_losses)
+    print(('    test error of best model %f') %
+          (test_score))
 
-            if epoch == n_epochs:
-                # Reconstruct the sentence
-                print '... ... Reconstructing'
-                y_pred = yrec_model()
-                # Save in wav format
-                output = numpy.int16(y_pred*560)
-                wv.write('predicted_data.wav', 16000, output)
+    # Reconstruct the sentence
+    print '... ... Reconstructing'
+    y_pred = yrec_model()
+    # Save in wav format
+    output = numpy.int16(y_pred*560)
+    wv.write('predicted_data.wav', 16000, output)
 
-                # Generate the sentence
-                print '... ... Generating'
-                y_gen = numpy.zeros(30000)
-                presamples = sentence_x.get_value()[2500]
-                for i in xrange(30000):
-                    y_gen[i] = ygen_model(presamples.reshape((1, 240)))
-                    presamples = numpy.roll(presamples, -1)
-                    presamples[-1] = y_gen[i]
-                output = numpy.int16(y_gen*560)
-                wv.write('generated_data.wav', 16000, output)
-                pylab.figure()
-                pylab.plot(numpy.arange(30000)+2500, y_gen)
-                pylab.xlabel('Samples')
-                pylab.ylabel('Amplitude')
-                pylab.savefig('generated_data.png', format='png')
+    # Generate the sentence
+    print '... ... Generating'
+    y_gen = numpy.zeros(30000)
+    presamples = sentence_x.get_value()[2500]
+    for i in xrange(30000):
+        y_gen[i] = ygen_model(presamples.reshape((1, 240)))
+        presamples = numpy.roll(presamples, -1)
+        presamples[-1] = y_gen[i]
+    output = numpy.int16(y_gen*560)
+    wv.write('generated_data.wav', 16000, output)
+    pylab.figure()
+    pylab.plot(numpy.arange(30000)+2500, y_gen)
+    pylab.xlabel('Samples')
+    pylab.ylabel('Amplitude')
+    pylab.savefig('generated_data.png', format='png')
 
     end_time = time.clock()
     print(('Optimization complete. Best validation score of %f '
