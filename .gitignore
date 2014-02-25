@@ -1,0 +1,23 @@
+# Python
+*.pyc
+*.pkl
+
+# Latex
+*.aux
+*.log
+*.nav
+*.out
+*.pdf
+*.snm
+*.toc
+*.vrb
+
+# Mac
+.DS_Store
+
+# Images
+*.png
+
+# Sounds
+*.wav
+*.WAV
