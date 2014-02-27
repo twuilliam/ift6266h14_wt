@@ -374,7 +374,11 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
     y_gen = numpy.zeros(30000)
     presamples = sentence_x.get_value()[2500]
     for i in xrange(30000):
-        y_gen[i] = ygen_model(presamples.reshape((1, 240)))
+        # without gaussian noise
+#        y_gen[i] = ygen_model(presamples.reshape((1, 240)))
+        # with gaussian noise
+        y_gen[i] = numpy.random.normal(ygen_model(presamples.reshape((1, 240))),
+                                       numpy.sqrt(min(train_err)))
         presamples = numpy.roll(presamples, -1)
         presamples[-1] = y_gen[i]
     output = numpy.int16(y_gen*560)

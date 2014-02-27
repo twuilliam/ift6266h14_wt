@@ -19,5 +19,5 @@
 *.png
 
 # Sounds
-*.wav
-*.WAV
+# *.wav
+# *.WAV
