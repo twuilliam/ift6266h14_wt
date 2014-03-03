@@ -14,7 +14,7 @@ import theano.tensor as T
 
 import scipy.io.wavfile as wv
 
-from ift6266h14_wt.utils import load_data2
+from ift6266h14_wt.utils import load_data_npz
 
 
 class HiddenLayer(object):
@@ -226,7 +226,7 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
 
 
    """
-    datasets = load_data2(dataset)
+    datasets = load_data_npz(dataset)
 
     train_set_x, train_set_y = datasets[0]
     valid_set_x, valid_set_y = datasets[1]
@@ -406,4 +406,4 @@ def test_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001, n_epochs=1000,
 
 if __name__ == '__main__':
     theano.config.exception_verbosity = 'high'
-    test_mlp(batch_size=20, n_epochs=100, n_hidden=10, dataset='timit_train.pkl')
+    test_mlp(batch_size=20, n_epochs=100, n_hidden=10, dataset='timit_train.npz')

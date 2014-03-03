@@ -32,7 +32,7 @@ def shared_dataset(data_xy, borrow=True):
     # floats it doesn't make sense) therefore instead of returning
     # ``shared_y`` we will have to cast it to float. This little hack
     # lets ous get around this issue
-    return shared_x, T.cast(shared_y, 'float64')
+    return shared_x, T.cast(shared_y, theano.config.floatX)
 
 
 def load_data(dataset):
@@ -69,7 +69,6 @@ def load_data2(dataset):
 
     :type dataset: string
     '''
-
     print '... loading data'
 
     f = file(dataset, 'rb')
@@ -80,6 +79,32 @@ def load_data2(dataset):
     valid_set_x, valid_set_y = shared_dataset(valid_set)
     train_set_x, train_set_y = shared_dataset(train_set)
     sentence_x, sentence_y = shared_dataset(sentence_set)
+
+    rval = [(train_set_x, train_set_y), (valid_set_x, valid_set_y),
+            (test_set_x, test_set_y), (sentence_x, sentence_y)]
+    return rval
+
+
+def load_data_npz(dataset):
+    ''' Loads the dataset
+    does the same thing as load_data2() but for .npz file
+
+    :type dataset: string
+    '''
+
+    print '... loading data'
+
+    npzfile = np.load(dataset, 'rb')
+    train_set = npzfile['train']
+    valid_set = npzfile['valid']
+    test_set = npzfile['test']
+    sentence_set = npzfile['sentence']
+    npzfile.close()
+
+    test_set_x, test_set_y = shared_dataset((np.vstack(test_set[0]), test_set[1]))
+    valid_set_x, valid_set_y = shared_dataset((np.vstack(valid_set[0]), valid_set[1]))
+    train_set_x, train_set_y = shared_dataset((np.vstack(train_set[0]), train_set[1]))
+    sentence_x, sentence_y = shared_dataset((np.vstack(sentence_set[0]), sentence_set[1]))
 
     rval = [(train_set_x, train_set_y), (valid_set_x, valid_set_y),
             (test_set_x, test_set_y), (sentence_x, sentence_y)]

@@ -1,6 +1,5 @@
 
 import numpy as np
-import cPickle
 import glob
 
 # Paths for input/output files
@@ -56,7 +55,7 @@ valid = (data[0][int(n/4*2):int(n/4*3)], data[1][int(n/4*2):int(n/4*3)].reshape(
 test = (data[0][int(n/4*3):], data[1][int(n/4*3):].reshape(int(n-int(n/4*3))))
 del data
 
-# Save the extracted features in a .pkl file
-f = file(outputpath+'timit_train.pkl', 'wb')
-cPickle.dump((train, valid, test, sentence), f, protocol=cPickle.HIGHEST_PROTOCOL)
+# Save the extracted features in a .npz file
+f = file(outputpath+'timit_train.npz', 'wb')
+np.savez(f, train=train, valid=valid, test=test, sentence=sentence)
 f.close()
