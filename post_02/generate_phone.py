@@ -49,8 +49,8 @@ mean_timit = 0.0035805809921434142
 std_timit = 542.48824133746177
 
 outputpath = './'
-desired_phn = 'oy'
-addnoise = True
+desired_phn = 'aw'
+addnoise = False
 index_phn = phonemes_list.index(desired_phn)
 dialect = 1
 sex = 25  # male=25 | female=24
@@ -131,7 +131,7 @@ del extr_data_all
 train = (data[0][0:int(n/4*2)], data[1][0:int(n/4*2)].reshape((int(n/4*2))))
 valid = (data[0][int(n/4*2):int(n/4*3)], data[1][int(n/4*2):int(n/4*3)].reshape(int(n/4)))
 test = (data[0][int(n/4*3):], data[1][int(n/4*3):].reshape(int(n-int(n/4*3))))
-sentence = (train[0][-1], train[1][-1])
+sentence = (numpy.zeros(240), 0.0)
 del data
 
 # Save the extracted features in a .npz file
