@@ -85,6 +85,43 @@ def load_data2(dataset):
     return rval
 
 
+def load_data_w_phn(data_wav, data_phn):
+    ''' Loads the dataset
+        does the same thing as load_data2() but for .npz file
+
+        :type dataset: string
+        '''
+
+    print '... loading data'
+
+    npzfile = np.load(data_wav, 'rb')
+    train_wav = npzfile['train']
+    valid_wav = npzfile['valid']
+    test_wav = npzfile['test']
+    npzfile.close()
+
+    npzfile = np.load(data_phn, 'rb')
+    train_phn = npzfile['train']
+    valid_phn = npzfile['valid']
+    test_phn = npzfile['test']
+    npzfile.close()
+
+    train_set_x, train_set_y = shared_dataset((np.concatenate((np.vstack(train_wav[0]), train_phn), axis=1), train_wav[1]))
+    valid_set_x, valid_set_y = shared_dataset((np.concatenate((np.vstack(valid_wav[0]), valid_phn), axis=1), valid_wav[1]))
+    test_set_x, test_set_y = shared_dataset((np.concatenate((np.vstack(test_wav[0]), test_phn), axis=1), test_wav[1]))
+
+    rval = [(train_set_x, train_set_y), (valid_set_x, valid_set_y),
+            (test_set_x, test_set_y)]
+    return rval
+
+
+def load_sentence(sentence):
+    npzfile = np.load(sentence, 'rb')
+    stnc = npzfile['sentence']
+    npzfile.close()
+    return stnc.astype(theano.config.floatX)
+
+
 def load_data_npz(dataset):
     ''' Loads the dataset
     does the same thing as load_data2() but for .npz file
