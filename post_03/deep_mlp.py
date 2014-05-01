@@ -480,6 +480,7 @@ def generate_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001,
     # Load data
     datasets = load_data_npz(dataset)
 
+    train_set_x, train_set_y = datasets[0]
     sentence_x, sentence_y = datasets[3]
 
     ######################
@@ -487,10 +488,7 @@ def generate_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001,
     ######################
 
     # allocate symbolic variables for the data
-    index = T.lscalar()  # index to a [mini]batch
     x = T.matrix('x')  # the data is presented as rasterized images
-    y = T.fvector('y')  # the labels are presented as 1D vector
-    lr = T.fscalar()  # learning rate schedule
     previous_samples = T.matrix()
 
     rng = numpy.random.RandomState(1234)
@@ -514,6 +512,10 @@ def generate_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001,
 
     logfile.write('... ... Generating')
 
+    train_err = numpy.load(os.path.join(output_folder, 'train.npy'), 'r')
+    valid_err = numpy.load(os.path.join(output_folder, 'valid.npy'), 'r')
+    best_epoch = numpy.argmin(valid_err) + 1
+
     y_gen = numpy.zeros(30000)
     presamples = sentence_x.get_value()
     for i in xrange(30000):
@@ -522,7 +524,7 @@ def generate_mlp(learning_rate=0.01, L1_reg=0.00, L2_reg=0.0001,
         presamples = numpy.roll(presamples, -1)
         presamples[-1] = y_gen[i]
     output = numpy.int16((y_gen+mean_timit)*std_timit)
-    wv.write(os.path.join(output_folder, 'generated_data.wav'), 16000, output)
+    wv.write(os.path.join(output_folder,'generated_data_'+time.strftime("%Hh%Mm%Ss")+'.wav'), 16000, output)
 
 
 if __name__ == '__main__':
@@ -536,10 +538,11 @@ if __name__ == '__main__':
     n_hidden = [100, 100]
     dataset = 'timit_oy_train_aug.npz'
     output_folder = 'exp_1'
+    train = True
 
     # if we have arguments:
     # (I didn't use argparse because of an old version of python...)
-    opts, args = getopt.getopt(sys.argv[1:], 'i:o:e:n:b:l:')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:o:e:n:b:l:g:')
 
     for opt, arg in opts:
         if opt in ("-i"):
@@ -554,7 +557,14 @@ if __name__ == '__main__':
             batch_size = int(arg)
         elif opt in ("-l"):
             L2_reg = numpy.float32(arg)
+        elif opt in ("-g"):
+            train = bool(int(arg))
 
-    test_mlp(batch_size=batch_size, n_epochs=n_epochs,
-             n_hidden=n_hidden, L2_reg=L2_reg,
-             dataset=dataset, output_folder=output_folder)
+    if train:
+        test_mlp(batch_size=batch_size, n_epochs=n_epochs,
+                 n_hidden=n_hidden, L2_reg=L2_reg,
+                 dataset=dataset, output_folder=output_folder)
+    elif train is False:
+        generate_mlp(batch_size=batch_size, n_epochs=n_epochs,
+                     n_hidden=n_hidden, L2_reg=L2_reg,
+                     dataset=dataset, output_folder=output_folder)
